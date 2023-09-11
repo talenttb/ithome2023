@@ -18,20 +18,17 @@
   (.setStopTimeout jetty 10000)
   (.setStopAtShutdown jetty true))
 
-;; (def router
-;;   (r/router
-;;    [["/api/ping" ::ping]
-;;     ["/api/orders/:id" ::order]]))
-
 (defn handler [_]
   {:status 200, :body "pong"})
 
-(def app
-  (ring/ring-handler
-   (ring/router
-    [["/api"
-      ["/ping" {:name ::api.ping :get (fn [_] {:status 200, :body "api/pong"})}]
-      ["/user/:id" ::api.user]]
+(def api-router
+  ["/api"
+   ["/ping" {:name ::api.ping :get (fn [_] {:status 200, :body "api/pong"})}]
+   ["/user/:id" ::api.user]])
+
+(def router
+  (r/router
+    [api-router
      ["/users"
       {:get (fn [{::r/keys [router]}]
               {:status 200
@@ -43,7 +40,12 @@
      ["/users/:id"
       {:name ::user
        :get (constantly {:status 200, :body "user..."})}]
-     ["/ping" handler]])
+     ["/ping" handler]]))
+
+(def app
+  (ring/ring-handler
+   (ring/router
+    (r/routes router))
    (constantly {:status 404, :body ""})))
 
 (comment
@@ -51,6 +53,8 @@
   (app {:request-method :get :uri "/ping"})
   (app {:request-method :get :uri "/api/ping"})
   (app {:request-method :get, :uri "/users"})
+  (r/route-names router)
+  (r/routes router)
   )
 
 
