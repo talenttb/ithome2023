@@ -3,7 +3,9 @@
             [java-time.api :as t]
             [clojure.edn :as edn]
             [clojure.tools.logging :as log]
-            [ring.middleware.reload :refer [wrap-reload]])
+            [reitit.ring :as ring]
+            [ring.middleware.reload :refer [wrap-reload]]
+            [reitit.core :as r])
   (:gen-class))
 
 (defn date-str
@@ -16,10 +18,41 @@
   (.setStopTimeout jetty 10000)
   (.setStopAtShutdown jetty true))
 
-(defn app [_req]
-  {:status 200
-   :headers {"Content-Type" "text/html"}
-   :body "Hello World 9898"})
+;; (def router
+;;   (r/router
+;;    [["/api/ping" ::ping]
+;;     ["/api/orders/:id" ::order]]))
+
+(defn handler [_]
+  {:status 200, :body "pong"})
+
+(def app
+  (ring/ring-handler
+   (ring/router
+    [["/api"
+      ["/ping" {:name ::api.ping :get (fn [_] {:status 200, :body "api/pong"})}]
+      ["/user/:id" ::api.user]]
+     ["/users"
+      {:get (fn [{::r/keys [router]}]
+              {:status 200
+               :body (for [i (range 10)]
+                       {:uri (-> router
+                                 (r/match-by-name ::user {:id i})
+                                   ;; with extra query-params
+                                 (r/match->path {:iso "möly"}))})})}]
+     ["/users/:id"
+      {:name ::user
+       :get (constantly {:status 200, :body "user..."})}]
+     ["/ping" handler]])
+   (constantly {:status 404, :body ""})))
+
+(comment
+  (app {:uri "/invalid"})
+  (app {:request-method :get :uri "/ping"})
+  (app {:request-method :get :uri "/api/ping"})
+  (app {:request-method :get, :uri "/users"})
+  )
+
 
 (defonce server (atom nil))
 
