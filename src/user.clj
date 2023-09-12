@@ -2,6 +2,7 @@
   (:require [ring.adapter.jetty :as jetty]
             [java-time.api :as t]
             [clojure.edn :as edn]
+            [ithome.hello :as hello]
             [clojure.tools.logging :as log]
             [reitit.ring :as ring]
             [ring.middleware.reload :refer [wrap-reload]]
@@ -28,19 +29,20 @@
 
 (def router
   (r/router
-    [api-router
-     ["/users"
-      {:get (fn [{::r/keys [router]}]
-              {:status 200
-               :body (for [i (range 10)]
-                       {:uri (-> router
-                                 (r/match-by-name ::user {:id i})
+   [api-router
+    ["/hello" (hello/router)]
+    ["/users"
+     {:get (fn [{::r/keys [router]}]
+             {:status 200
+              :body (for [i (range 10)]
+                      {:uri (-> router
+                                (r/match-by-name ::user {:id i})
                                    ;; with extra query-params
-                                 (r/match->path {:iso "möly"}))})})}]
-     ["/users/:id"
-      {:name ::user
-       :get (constantly {:status 200, :body "user..."})}]
-     ["/ping" handler]]))
+                                (r/match->path {:iso "möly"}))})})}]
+    ["/users/:id"
+     {:name ::user
+      :get (constantly {:status 200, :body "user..."})}]
+    ["/ping" handler]]))
 
 (def app
   (ring/ring-handler
@@ -54,9 +56,7 @@
   (app {:request-method :get :uri "/api/ping"})
   (app {:request-method :get, :uri "/users"})
   (r/route-names router)
-  (r/routes router)
-  )
-
+  (r/routes router))
 
 (defonce server (atom nil))
 
