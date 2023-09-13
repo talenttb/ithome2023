@@ -22,9 +22,46 @@
                   [:meta {:charset "UTF-8"}]
                   [:meta {:name "viewport" :content "width=device-width, initial-scale=1.0"}]
                   [:title "HTML 5 Boilerplate"]
-                  [:link {:rel "stylesheet" :href "style.css"}]]
-                 [:body [:script {:src "index.js"}]
-                  [:div [:h1 "Hello Hiccup"]]]]))})
+                  [:link {:rel "stylesheet"
+                          :href "https://cdn.jsdelivr.net/npm/@unocss/reset/tailwind.min.css"}]
+
+                  [:script
+                   (h/raw
+                    "
+                    window.__unocss = {
+                        rules: [
+                            ['custom-rule', { color: 'red'}],
+                        ]
+                    }
+                  ")]
+                  [:script
+                   {:src "https://cdn.jsdelivr.net/npm/@unocss/runtime/attributify.global.js"}]]
+
+                 [:body {:p-2 "" :md:p-0 "" :h-full ""}
+                  [:header {:max-w-screen-lg ""
+                            :mx-auto ""
+                            :md:flex ""
+                            :justify-between ""
+                            :py-4 ""}
+                   [:h1 {:font-bold "" :text-4xl "" :md:inline-block ""}
+                    "Basic template"]
+                   [:ul {:pt-2 ""}
+                    [:li {:md:inline-block "" :ml-4 ""}
+                     [:a {:href "yyy"}
+                      "basic"]]
+                    [:li {:md:inline-block "" :ml-4 ""}
+                     [:a {:href "xxx"}
+                      "inline"]]]]
+                  [:h2 {:max-w-screen-lg ""
+                        :mx-auto ""
+                        :font-bold ""
+                        :text-2xl ""
+                        :py-4 ""}
+                   "This is a page"]
+                  [:div {:custom-rule "" :m-1 ""} "test"]
+
+                  [:p {:max-w-screen-lg "" :mx-auto ""}
+                   "Give it a shot"]]]))})
 
 (comment
   (str (h/html [:span {:class "foo"} "bar"]))
