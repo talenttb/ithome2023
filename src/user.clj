@@ -1,7 +1,7 @@
 (ns user
   (:require [ring.adapter.jetty :as jetty]
             [java-time.api :as t]
-            [clojure.edn :as edn]
+            [ithome.db :as db]
             [ithome.hello :as hello]
             [clojure.tools.logging :as log]
             [reitit.ring :as ring]
@@ -68,6 +68,9 @@
                         (wrap-reload #'app))
                       app)]
     (log/info "Start server on " port)
+    (log/info "Init db")
+    (db/init-table)
+
 ;;   https://github.com/ring-clojure/ring/blob/master/ring-jetty-adapter/src/ring/adapter/jetty.clj
     (reset! server (jetty/run-jetty app_hanlder
                                     {:port port

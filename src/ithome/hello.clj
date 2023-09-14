@@ -1,6 +1,7 @@
 (ns ithome.hello
-  (:require [java-time.api :as t]
-            [hiccup2.core :as h]))
+  (:require
+   [java-time.api :as t]
+   [hiccup2.core :as h]))
 
 (defn time-str
   "Returns a string representation of a datetime in the local time zone."
