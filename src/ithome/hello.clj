@@ -75,4 +75,4 @@
 (defn router
   []
   [""
-   ["/you" {:handler you_handler}]])
+   ["/you" {:name :hello.you :handler you_handler}]])

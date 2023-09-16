@@ -2,7 +2,7 @@
   (:require [ring.adapter.jetty :as jetty]
             [java-time.api :as t]
             [ithome.db :as db]
-            [ithome.hello :as hello]
+            [ithome.router :as router]
             [clojure.tools.logging :as log]
             [reitit.ring :as ring]
             [ring.middleware.reload :refer [wrap-reload]]
@@ -19,35 +19,10 @@
   (.setStopTimeout jetty 10000)
   (.setStopAtShutdown jetty true))
 
-(defn handler [_]
-  {:status 200, :body "pong"})
-
-(def api-router
-  ["/api"
-   ["/ping" {:name ::api.ping :get (fn [_] {:status 200, :body "api/pong"})}]
-   ["/user/:id" ::api.user]])
-
-(def router
-  (r/router
-   [api-router
-    ["/hello" (hello/router)]
-    ["/users"
-     {:get (fn [{::r/keys [router]}]
-             {:status 200
-              :body (for [i (range 10)]
-                      {:uri (-> router
-                                (r/match-by-name ::user {:id i})
-                                   ;; with extra query-params
-                                (r/match->path {:iso "möly"}))})})}]
-    ["/users/:id"
-     {:name ::user
-      :get (constantly {:status 200, :body "user..."})}]
-    ["/ping" handler]]))
-
 (def app
   (ring/ring-handler
-   (ring/router
-    (r/routes router))
+   (ring/router 
+    (r/routes router/router))
    (constantly {:status 404, :body ""})))
 
 (comment
@@ -55,10 +30,16 @@
   (app {:request-method :get :uri "/ping"})
   (app {:request-method :get :uri "/api/ping"})
   (app {:request-method :get, :uri "/users"})
-  (r/route-names router)
-  (r/routes router))
+  (-> router/router
+    (r/match-by-name :login.root)
+    (r/match->path {:iso "möly"}))
+  (r/route-names router/router)
+  (r/routes router/router))
 
 (defonce server (atom nil))
+
+(comment
+  (start-server true 7777))
 
 (defn start-server
   [dev? port]
