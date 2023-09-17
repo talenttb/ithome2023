@@ -1,5 +1,7 @@
 (ns ithome.login
   (:require
+   [buddy.sign.jwt :as jwt]
+   [java-time.api :as t]
    [clojure.core.match :as m]
    [ithome.db :as db]
    [hiccup2.core :as h]
@@ -8,26 +10,37 @@
    [reitit.core :as r]))
 
 (comment
+  (def req req)
   (:request-method req)
-  (:params req))
+  (:params req)
+
+  (def claims {:user 1 :exp (t/plus (t/instant) (t/hours 2))})
+
+  (def token (jwt/sign claims "key"))
+
+  (jwt/unsign token "key")
+  (jwt/unsign token "key" {:now (t/plus (t/instant) (t/hours 10))}))
 
 (defn login_handler [req]
-  ;; For demo how to debug ~~~
-  (def req req)
   (m/match
    req
     {:request-method :post :params {:_action "login"}}
-    (let [_ (def req req)
-          params (:params req)
+    (let [params (:params req)
           user (db/query1
                 (sql/format {:select [:*]
                              :from [:ithome]
                              :where [:and
                                      [:= [:json_extract :v [:inline (str "$.kind")]] "user"]
-                                     [:= [:json_extract :v [:inline (str "$.name")]] "user"]]}))]
-      (rr/redirect (-> (:reitit.core/router req)
-                       (r/match-by-name :hello.you)
-                       r/match->path)))
+                                     [:= [:json_extract :v [:inline (str "$.name")]] (:name params)]]}))]
+      (if user
+        (-> (rr/redirect (-> (:reitit.core/router req)
+                             (r/match-by-name :hello.me)
+                             r/match->path))
+            (assoc :session (jwt/sign {:user (:id user)
+                                       :exp (t/plus (t/instant) (t/hours 2))} "key")))
+
+        ;; TODO: redirect to the same page with warning messages.
+        {:status 401 :body "You!! Unauthorized"}))
 
     :else
     {:status 200

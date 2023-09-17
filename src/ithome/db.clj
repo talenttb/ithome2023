@@ -4,7 +4,8 @@
    [next.jdbc :as jdbc]
    [nano-id.core :refer [nano-id]]
    [clojure.data.json :as json]
-   [next.jdbc.result-set :as rs])
+   [next.jdbc.result-set :as rs]
+   [clojure.edn :as edn])
   (:import [com.github.f4b6a3.ksuid KsuidCreator]))
 
 (defn- ksuid
@@ -17,9 +18,10 @@
 (def ^:private ds (jdbc/get-datasource config))
 
 (defn query [sql]
-  (jdbc/execute! ds sql
-                 {:return-keys true
-                  :builder-fn rs/as-unqualified-maps}))
+  (let [data (jdbc/execute! ds sql
+                            {:return-keys true
+                             :builder-fn rs/as-unqualified-maps})]
+    (map (fn [d] (-> d :v (json/read-str :key-fn keyword))) data)))
 
 ;; in sqlite, both of 'query1' are equal almost.
 #_(defn query1 [sql]
@@ -63,6 +65,7 @@
   (create-table "ithome")
 
   (put {:hi "ithome" :day "11" :kind "test"})
+  (put {:name "test" :kind "user"})
 
   (query ["select * from ithome"])
   (query1 ["select * from ithome"])

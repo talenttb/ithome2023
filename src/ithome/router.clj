@@ -4,7 +4,9 @@
    [ithome.login :as login]
    [clojure.tools.logging :as log]
    [ring.middleware.keyword-params :refer [wrap-keyword-params]]
+   [ring.middleware.session.cookie :refer [cookie-store]]
    [ring.middleware.params :refer [wrap-params]]
+   [ring.middleware.session :as session]
    [reitit.core :as r]))
 
 (def api-router
@@ -15,9 +17,23 @@
 (defn handler [_]
   {:status 200, :body "pong"})
 
+(def session-options
+  {:cookie-attrs {:path "/" :secure true :http-only true}
+   :cookie-name "ithome2023"
+   :store (cookie-store {:key "yoyoithome202309"})})
+
+(defn wrap-session [handler]
+  (fn [req]
+    (let [req' (session/session-request req session-options)
+          resp (handler req')]
+      (session/session-response
+       resp
+       req'
+       session-options))))
+
 (def router
   (r/router 
-   ["" {:middleware [wrap-params wrap-keyword-params]}
+   ["" {:middleware [wrap-params wrap-keyword-params wrap-session]}
     
     api-router
     ["/hello" (hello/router)]

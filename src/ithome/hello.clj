@@ -1,6 +1,9 @@
 (ns ithome.hello
   (:require
    [java-time.api :as t]
+   [ithome.db :as db]
+   [honey.sql :as sql]
+   [buddy.sign.jwt :as jwt]
    [hiccup2.core :as h]))
 
 (defn time-str
@@ -64,15 +67,56 @@
                   [:p {:max-w-screen-lg "" :mx-auto ""}
                    "Give it a shot"]]]))})
 
+
+(defn me_handler [req]
+  {:status 200
+   :headers {"Content-Type" "text/html;charset=UTF-8"}
+   :body
+   (str (h/raw "<!DOCTYPE html>")
+        (h/html [:html {:lang "en"}
+                 [:head
+                  [:meta {:charset "UTF-8"}]
+                  [:meta {:name "viewport" :content "width=device-width, initial-scale=1.0"}]
+                  [:title "HTML 5 Boilerplate"]
+                  [:link {:rel "stylesheet"
+                          :href "https://cdn.jsdelivr.net/npm/@unocss/reset/tailwind.min.css"}]
+                  [:script
+                   {:src "https://cdn.jsdelivr.net/npm/@unocss/runtime/attributify.global.js"}]]
+
+                 [:body {:p-2 "" :md:p-0 "" :h-full ""}
+                  [:header {:max-w-screen-lg ""
+                            :mx-auto ""
+                            :md:flex ""
+                            :justify-between ""
+                            :py-4 ""}
+                   [:h1 {:font-bold "" :text-4xl "" :md:inline-block ""}
+                    "HELLO"]]
+                  [:h2 {:max-w-screen-lg ""
+                        :mx-auto ""
+                        :font-bold ""
+                        :text-2xl ""
+                        :py-4 ""}
+                   "User: "
+                   (let [session (jwt/unsign (:session req) "key")
+                         _ (assert session "Session expired.")
+                         user
+                         (db/query1
+                          (sql/format {:select [:*]
+                                       :from [:ithome]
+                                       :where [:and
+                                               [:= [:json_extract :v [:inline (str "$.kind")]] "user"]
+                                               [:= [:json_extract :v [:inline (str "$.id")]] (:user session)]]}))]
+                     (:name user))]]]))})
+
 (comment
   (str (h/html [:span {:class "foo"} "bar"]))
   (h/html
    {:lang "en"}
    [:head]
-   [:body [:div [:h1 {:class "info"} "Hiccup"]]])
-  )
+   [:body [:div [:h1 {:class "info"} "Hiccup"]]]))
 
 (defn router
   []
   [""
-   ["/you" {:name :hello.you :handler you_handler}]])
+   ["/you" {:name :hello.you :handler you_handler}]
+   ["/me" {:name :hello.me :handler me_handler}]])

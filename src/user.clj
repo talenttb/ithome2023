@@ -39,7 +39,8 @@
 (defonce server (atom nil))
 
 (comment
-  (start-server true 7777))
+  (start-server true 7777)
+  (stop-server))
 
 (defn start-server
   [dev? port]
@@ -61,5 +62,6 @@
 (defn stop-server
   []
   (when-not (nil? @server)
+    (log/info "Stop server")
     (.stop @server)
     (reset! server nil)))
