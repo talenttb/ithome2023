@@ -1,9 +1,11 @@
 (ns ithome.login
   (:require
    [buddy.sign.jwt :as jwt]
+   [buddy.hashers :as hashers]
    [java-time.api :as t]
    [clojure.core.match :as m]
    [ithome.db :as db]
+   [buddy.core.nonce :as nonce]
    [hiccup2.core :as h]
    [honey.sql :as sql]
    [ring.util.response :as rr]
@@ -18,6 +20,22 @@
 
   (def token (jwt/sign claims "key"))
 
+  (defn derive-options []
+    (-> #{:bcrypt+blake2b-512 :bcrypt+sha384
+          :pbkdf2+blake2b-512 :pbkdf2+sha512
+          :pbkdf2+sha3_256 :pbkdf2+sha1}
+        shuffle
+        first))
+
+  (hashers/derive "secretpassword" {:alg (derive-options)})
+  (hashers/verify "secretpassword" "bcrypt+blake2b-512$eecc8e644f1680ddac4996a6eae757bd$12$ed54a6c83108f45f1fc807fe8de173a9a3e87a49dd586b34")
+
+  (let [pwd "hi"
+        derived-pwd (hashers/derive pwd {:alg (derive-options)})
+        result (hashers/verify pwd derived-pwd)]
+    (db/put {:name "test" :kind "user" :derived-pwd derived-pwd})
+    (prn result))
+  
   (jwt/unsign token "key")
   (jwt/unsign token "key" {:now (t/plus (t/instant) (t/hours 10))}))
 
