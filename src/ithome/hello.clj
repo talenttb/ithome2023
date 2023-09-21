@@ -2,6 +2,7 @@
   (:require
    [java-time.api :as t]
    [ithome.db :as db]
+   [sci.core :as sci]
    [honey.sql :as sql]
    [buddy.sign.jwt :as jwt]
    [hiccup2.core :as h]))
@@ -15,6 +16,10 @@
 
 (defn run [opts]
   (println "Hello world, the time is" (time-str (t/instant))))
+
+(comment
+  (sci/eval-string "(inc 1)")
+  (sci/eval-string "(inc x)" {:namespaces {'user {'x 2}}}))
 
 (defn you_handler [_]
   {:status 200
@@ -50,12 +55,22 @@
                    [:h1 {:font-bold "" :text-4xl "" :md:inline-block ""}
                     "Basic template"]
                    [:ul {:pt-2 ""}
-                    [:li {:md:inline-block "" :ml-4 ""}
-                     [:a {:href "yyy"}
-                      "basic"]]
-                    [:li {:md:inline-block "" :ml-4 ""}
-                     [:a {:href "xxx"}
-                      "inline"]]]]
+                    #_(for [x (range 5)]
+                        [:li {:md:inline-block "" :ml-4 ""}
+                         [:a {:href "yyy"}
+                          x]])
+                    #_(for [x (range 5)
+                          :when (even? x)]
+                      [:li {:md:inline-block "" :ml-4 ""}
+                       [:a {:href "yyy"}
+                        x]])
+                    (let [str-from-somewhere "(->> state (filter odd?))"]
+                      (for [x (sci/eval-string
+                               str-from-somewhere
+                               {:bindings {'state (range 5)}})]
+                        [:li {:md:inline-block "" :ml-4 ""}
+                         [:a {:href "yyy"}
+                          x]]))]]
                   [:h2 {:max-w-screen-lg ""
                         :mx-auto ""
                         :font-bold ""
