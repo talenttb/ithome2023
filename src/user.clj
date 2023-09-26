@@ -3,7 +3,6 @@
             [java-time.api :as t]
             [ithome.db :as db]
             [ithome.router :as router]
-            [clojure.tools.logging :as log]
             [reitit.ring :as ring]
             [ring.middleware.reload :refer [wrap-reload]]
             [reitit.core :as r])
@@ -38,19 +37,15 @@
 
 (defonce server (atom nil))
 
-(comment
-  (start-server true 7777)
-  (stop-server))
-
 (defn start-server
   [dev? port]
   (let [app_hanlder (if dev?
                       (do
-                        (log/info "enable auto-reloading in dev enviroment")
+                        (prn "enable auto-reloading in dev enviroment")
                         (wrap-reload #'app))
                       app)]
-    (log/info "Start server on " port)
-    (log/info "Init db")
+    (prn "Start server on " port)
+    (prn "Init db")
     (db/init-table)
 
 ;;   https://github.com/ring-clojure/ring/blob/master/ring-jetty-adapter/src/ring/adapter/jetty.clj
@@ -62,6 +57,14 @@
 (defn stop-server
   []
   (when-not (nil? @server)
-    (log/info "Stop server")
+    (prn "Stop server")
     (.stop @server)
     (reset! server nil)))
+
+(comment
+  (start-server true 7777)
+  (stop-server))
+
+(defn -main
+  [& _args]
+  (start-server true 7777))

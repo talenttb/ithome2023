@@ -2,7 +2,6 @@
   (:require
    [ithome.hello :as hello]
    [ithome.login :as login]
-   [clojure.tools.logging :as log]
    [ring.middleware.keyword-params :refer [wrap-keyword-params]]
    [ring.middleware.session.cookie :refer [cookie-store]]
    [ring.middleware.params :refer [wrap-params]]
