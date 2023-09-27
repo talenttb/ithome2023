@@ -12,3 +12,5 @@ WORKDIR /usr/src/app
 COPY . /usr/src/app
 COPY --from=litestream /usr/local/bin/litestream /usr/local/bin/litestream
 COPY --from=builder /usr/src/app/target/app.jar /usr/src/app/target/app.jar
+
+ENTRYPOINT ["java", "-jar", "target/app.jar"]
