@@ -1,0 +1,27 @@
+# flyctl launch added from .gitignore
+**/.lsp
+
+**/.clj-kondo/.cache
+**/.clj-kondo/juxt
+**/.clj-kondo
+**/.calva
+
+**/*.dylib
+
+**/.cpcache
+
+**/.nrepl-port
+
+**/.env
+
+**/**/.DS_Store
+**/.vscode
+**/vs-code.edn
+
+**/.devcontainer/devcontainer.env
+
+**/mydev
+
+**/target
+
+**/.clerk
