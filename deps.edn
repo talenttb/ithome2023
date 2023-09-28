@@ -13,6 +13,7 @@
   nano-id/nano-id {:mvn/version "1.0.0"}
   org.babashka/sci {:mvn/version "0.8.40"}
   com.rpl/specter {:mvn/version "1.1.4"}
+  nrepl/nrepl {:mvn/version "1.1.0-alpha1"}
   buddy/buddy-core {:mvn/version "1.11.423"}
   buddy/buddy-auth {:mvn/version "3.0.323"}
   buddy/buddy-hashers {:mvn/version "2.0.167"}

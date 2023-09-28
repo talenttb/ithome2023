@@ -3,6 +3,7 @@
             [ithome.db :as db]
             [ithome.router :as router]
             [reitit.ring :as ring]
+            [nrepl.server]
             [ring.middleware.reload :refer [wrap-reload]]
             [reitit.core :as r])
   (:gen-class))
@@ -30,6 +31,8 @@
 
 (defonce server (atom nil))
 
+(defonce nrepl (nrepl.server/start-server :port 19999 :bind "0.0.0.0"))
+
 (defn start-server
   [dev? port]
   (let [app_hanlder (if dev?
@@ -37,6 +40,7 @@
                         (prn "enable auto-reloading in dev enviroment")
                         (wrap-reload #'app))
                       app)]
+    (prn "Start nrepl on 19999")
     (prn "Start server on " port)
     (prn "Init db")
     (db/init-table)
@@ -52,6 +56,7 @@
   (when-not (nil? @server)
     (prn "Stop server")
     (.stop @server)
+    (nrepl.server/stop-server nrepl)
     (reset! server nil)))
 
 (defn -main
